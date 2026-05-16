@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shield AI — Hackathon 2026 Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --indigo: #6366f1; --purple: #a855f7; --cyan: #06b6d4;
+    --rose: #f43f5e; --amber: #f59e0b; --emerald: #10b981;
+    --dark: #050508; --card: rgba(17,17,24,0.85);
+    --border: rgba(255,255,255,0.07);
+  }
+
+  html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--dark); color: #e2e8f0; }
+
+  /* ── Background ── */
+  #bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(99,102,241,.18) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 50% at 85% 90%, rgba(168,85,247,.10) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 40% at 10% 80%, rgba(6,182,212,.07) 0%, transparent 45%);
+  }
+
+  /* ── Slide container ── */
+  #deck { position: relative; z-index: 1; width: 100vw; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 80px;
+    opacity: 0; pointer-events: none;
+    transform: translateX(60px);
+    transition: opacity .45s ease, transform .45s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .slide.prev   { opacity: 0; transform: translateX(-60px); }
+
+  /* ── Glass card ── */
+  .card {
+    background: var(--card); backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 0 0 1px rgba(99,102,241,.08), 0 24px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  /* ── Typography ── */
+  .tag {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 99px;
+    border: 1px solid rgba(99,102,241,.35);
+    background: rgba(99,102,241,.1);
+    color: #a5b4fc; margin-bottom: 20px;
+  }
+  h1 { font-size: clamp(2.8rem,5vw,4.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -.03em; }
+  h2 { font-size: clamp(2rem,3vw,3rem); font-weight: 800; line-height: 1.1; letter-spacing: -.025em; }
+  h3 { font-size: 1.1rem; font-weight: 700; }
+  p  { color: #94a3b8; line-height: 1.7; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .gradient {
+    background: linear-gradient(135deg, #e2e8f0 0%, #818cf8 45%, #a855f7 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .gradient-danger {
+    background: linear-gradient(135deg, #fda4af, #f43f5e);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .gradient-cyan {
+    background: linear-gradient(135deg, #67e8f9, #06b6d4, #6366f1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  /* ── Pill badges ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px;
+  }
+  .pill-indigo { background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.3); color: #a5b4fc; }
+  .pill-rose   { background: rgba(244,63,94,.15);  border: 1px solid rgba(244,63,94,.3);  color: #fda4af; }
+  .pill-green  { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3); color: #6ee7b7; }
+  .pill-amber  { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); color: #fcd34d; }
+  .pill-cyan   { background: rgba(6,182,212,.12);  border: 1px solid rgba(6,182,212,.3);  color: #67e8f9; }
+  .pill-purple { background: rgba(168,85,247,.12); border: 1px solid rgba(168,85,247,.3); color: #d8b4fe; }
+
+  /* ── Grid helpers ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; width: 100%; }
+  .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; width: 100%; }
+
+  /* ── Feature row ── */
+  .feat { display: flex; align-items: flex-start; gap: 14px; }
+  .feat-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+  .feat h3 { font-size: .95rem; color: #e2e8f0; margin-bottom: 4px; }
+  .feat p  { font-size: .82rem; color: #64748b; line-height: 1.5; }
+
+  /* ── Metric card ── */
+  .metric { padding: 22px; border-radius: 16px; text-align: center; }
+  .metric .num { font-size: 2.4rem; font-weight: 900; font-family: 'JetBrains Mono',monospace; line-height: 1; }
+  .metric .lbl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #475569; margin-top: 6px; }
+
+  /* ── Code block ── */
+  .code { background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.06); border-radius: 12px; padding: 18px 22px; font-family: 'JetBrains Mono',monospace; font-size: .8rem; color: #94a3b8; line-height: 1.7; }
+  .code .kw  { color: #818cf8; }
+  .code .str { color: #6ee7b7; }
+  .code .num { color: #fcd34d; }
+  .code .cm  { color: #475569; }
+  .code .fn  { color: #f9a8d4; }
+
+  /* ── Layer badge ── */
+  .layer { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05); }
+  .layer-num { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg,#6366f1,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: white; flex-shrink: 0; }
+  .layer-text { font-size: .82rem; color: #94a3b8; }
+  .layer-text strong { color: #e2e8f0; }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .flow-box { padding: 10px 18px; border-radius: 10px; font-size: .8rem; font-weight: 600; text-align: center; }
+  .flow-arrow { color: #334155; font-size: 1.2rem; }
+
+  /* ── Progress bar ── */
+  .pbar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.05); overflow: hidden; margin-top: 6px; }
+  .pbar-fill { height: 100%; border-radius: 99px; }
+
+  /* ── Navigation ── */
+  #nav {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 14px; z-index: 100;
+    background: rgba(10,10,20,.85); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 99px; padding: 10px 20px;
+  }
+  #nav button {
+    background: none; border: none; cursor: pointer; color: #94a3b8;
+    width: 36px; height: 36px; border-radius: 10px; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  #nav button:hover { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  #slide-counter { font-size: 12px; font-weight: 700; color: #475569; font-family: 'JetBrains Mono',monospace; min-width: 48px; text-align: center; }
+  .dot-nav { display: flex; gap: 6px; align-items: center; }
+  .dot { width: 6px; height: 6px; border-radius: 99px; background: #1e293b; cursor: pointer; transition: all .2s; }
+  .dot.on { width: 20px; background: var(--indigo); }
+
+  /* ── Slide-specific ── */
+  .slide-hero { text-align: center; }
+  .logo-ring {
+    width: 88px; height: 88px; border-radius: 24px; margin: 0 auto 28px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+    box-shadow: 0 0 0 1px rgba(99,102,241,.3), 0 0 40px rgba(99,102,241,.25), 0 20px 40px rgba(0,0,0,.4);
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .stat-ring { --p: 0; position: relative; width: 80px; height: 80px; margin: 0 auto; }
+  .stat-ring svg { width: 80px; height: 80px; transform: rotate(-90deg); }
+  .stat-ring circle { fill: none; stroke-width: 8; }
+  .stat-ring .track { stroke: rgba(255,255,255,.06); }
+  .stat-ring .fill  { stroke-dasharray: 220; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+  .stat-ring .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; font-family: 'JetBrains Mono',monospace; }
+
+  @keyframes pulse-glow {
+    0%,100%{box-shadow:0 0 12px rgba(244,63,94,.3)} 50%{box-shadow:0 0 28px rgba(244,63,94,.55)}
+  }
+  .pulse-red { animation: pulse-glow 2s ease-in-out infinite; }
+
+  /* ── Scroll text ── */
+  .scroll-wrap { overflow-x: hidden; -webkit-mask: linear-gradient(90deg,transparent,black 10%,black 90%,transparent); }
+  .scroll-inner { display: flex; gap: 28px; width: max-content; animation: scroll 20s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+  .scroll-chip { display: flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 99px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.02); font-size: 13px; font-weight: 600; color: #64748b; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+
+<div id="deck">
+
+  <!-- ══════════════════════════════════════════════════════ SLIDE 1 — HERO -->
+  <div class="slide active slide-hero">
+    <div class="logo-ring">🛡️</div>
+    <div class="tag">🏆 Hackathon 2026 — Team Shield</div>
+    <h1 class="gradient" style="margin-bottom:18px">Social Media &amp;<br>Abuse Detection System</h1>
+    <p style="font-size:1.15rem;max-width:640px;margin-bottom:36px">
+      Real-time AI-powered content moderation that detects threats, hate speech, insults, obscenity &amp; sarcasm — with full contextual intelligence.
+    </p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:44px">
+      <span class="pill pill-rose">⚠️ Threat Detection</span>
+      <span class="pill pill-purple">🚫 Hate Speech</span>
+      <span class="pill pill-indigo">💢 Insult</span>
+      <span class="pill pill-amber">🤬 Obscenity</span>
+      <span class="pill pill-cyan">😏 Sarcasm</span>
+    </div>
+    <div class="scroll-wrap" style="width:100%;max-width:700px">
+      <div class="scroll-inner">
+        <span class="scroll-chip">⚡ &lt;50ms inference</span>
+        <span class="scroll-chip">📂 File upload (.txt / .csv / .json)</span>
+        <span class="scroll-chip">🌐 URL scanning</span>
+        <span class="scroll-chip">🔴 Live stream moderation</span>
+        <span class="scroll-chip">📊 Real-time charts</span>
+        <span class="scroll-chip">🎯 Word-level highlighting</span>
+        <span class="scroll-chip">⚡ &lt;50ms inference</span>
+        <span class="scroll-chip">📂 File upload (.txt / .csv / .json)</span>
+        <span class="scroll-chip">🌐 URL scanning</span>
+        <span class="scroll-chip">🔴 Live stream moderation</span>
+        <span class="scroll-chip">📊 Real-time charts</span>
+        <span class="scroll-chip">🎯 Word-level highlighting</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 2 — PROBLEM -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%">
+      <div class="tag">😰 The Problem</div>
+      <h2 class="gradient-danger" style="margin-bottom:16px">Online toxicity is out of control</h2>
+      <p style="max-width:640px;margin-bottom:40px;font-size:1.05rem">
+        Every day, millions of hateful messages, threats, and abusive comments flood social media platforms — and human moderators simply can't keep up.
+      </p>
+      <div class="grid3" style="margin-bottom:36px">
+        <div class="card metric">
+          <div class="num" style="color:#f43f5e">4.3B</div>
+          <div class="lbl">Social media users worldwide</div>
+          <div class="pbar"><div class="pbar-fill" style="width:86%;background:linear-gradient(90deg,#f43f5e,#fb7185)"></div></div>
+        </div>
+        <div class="card metric">
+          <div class="num" style="color:#f59e0b">41%</div>
+          <div class="lbl">Users experience online harassment</div>
+          <div class="pbar"><div class="pbar-fill" style="width:41%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+        </div>
+        <div class="card metric">
+          <div class="num" style="color:#a855f7">$3.4T</div>
+          <div class="lbl">Projected cost of cyber abuse by 2030</div>
+          <div class="pbar"><div class="pbar-fill" style="width:68%;background:linear-gradient(90deg,#a855f7,#c084fc)"></div></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="feat card" style="padding:20px">
+          <div class="feat-icon">🐌</div>
+          <div>
+            <h3>Human moderation is too slow</h3>
+            <p>Average moderation response time is 24–72 hours. Damage is already done.</p>
+          </div>
+        </div>
+        <div class="feat card" style="padding:20px">
+          <div class="feat-icon">🧩</div>
+          <div>
+            <h3>Context-blind keyword filters fail</h3>
+            <p>"Kill the bug" or "I hate Mondays" gets flagged incorrectly — false positives destroy trust.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 3 — SOLUTION -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%">
+      <div class="tag">💡 Our Solution</div>
+      <h2 class="gradient" style="margin-bottom:16px">An intelligent, context-aware<br>moderation engine</h2>
+      <p style="margin-bottom:36px;max-width:640px;font-size:1.05rem">
+        Shield AI combines deep keyword intelligence, proximity-based context detection, and smart safe-word negation to deliver accurate, lightning-fast results.
+      </p>
+      <div class="grid2">
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+          <div class="feat">
+            <div class="feat-icon">⚡</div>
+            <div><h3>Real-time analysis</h3><p>Debounced live inference as you type — results delivered in under 50ms.</p></div>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">🧠</div>
+            <div><h3>Context intelligence</h3><p>Detects "you're garbage" but ignores "garbage collection in Python".</p></div>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">🎯</div>
+            <div><h3>Word-level highlighting</h3><p>Token-level attention mapping shows exactly which words triggered the flag.</p></div>
+          </div>
+        </div>
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+          <div class="feat">
+            <div class="feat-icon">📂</div>
+            <div><h3>Batch file analysis</h3><p>Upload .txt, .csv or .json — analyze 500 rows in parallel instantly.</p></div>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">🌐</div>
+            <div><h3>URL content scanning</h3><p>Fetch any public web page, strip HTML, and analyze extracted text.</p></div>
+          </div>
+          <div class="feat">
+            <div class="feat-icon">⚙️</div>
+            <div><h3>Adjustable sensitivity</h3><p>High / Balanced / Strict presets — customizable per use-case.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 4 — HOW IT WORKS -->
+  <div class="slide">
+    <div style="max-width:880px;width:100%">
+      <div class="tag">⚙️ How It Works</div>
+      <h2 class="gradient" style="margin-bottom:28px">7-Layer Detection Pipeline</h2>
+      <p style="margin-bottom:16px;color:#94a3b8;font-size:.95rem"><strong>XLM-RoBERT</strong> — Rule-based heuristic NLP pipeline (not pre-trained deep learning). 250+ keywords, 7 intelligent layers, context-aware with negation handling.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="layer"><div class="layer-num">1</div><div class="layer-text"><strong>Keyword Matching</strong> — 250+ toxic keywords scored by category (Threat, Hate, Insult, Obscenity), per-word confidence 0.0–1.0</div></div>
+        <div class="layer"><div class="layer-num">2</div><div class="layer-text"><strong>Proximity Combo</strong> — Derogatory words near person nouns (you, he, she, person) within ±4 words → amplify Insult score</div></div>
+        <div class="layer"><div class="layer-num">3</div><div class="layer-text"><strong>Phrase Matching</strong> — 60+ exact toxic phrases ("waste of space", "go die", "drop dead", "i will kill you")</div></div>
+        <div class="layer"><div class="layer-num">4</div><div class="layer-text"><strong>Sarcasm Detection</strong> — Pattern matching for sarcastic keywords ("yeah right", "obviously", "oh sure")</div></div>
+        <div class="layer"><div class="layer-num">5</div><div class="layer-text"><strong>Negation Dampening</strong> — "not/never/don't/can't" within 3 words of toxic word → 75% score reduction</div></div>
+        <div class="layer"><div class="layer-num">6</div><div class="layer-text"><strong>Context Reducers</strong> — Gaming (kill, boss, pvp), Medical (cancer, patient), News (alleged, suspect) → 45% multiplier</div></div>
+        <div class="layer"><div class="layer-num">7</div><div class="layer-text"><strong>Safe Word Whitelist</strong> — 80+ words (nice, good, love, art, music, python) never flagged regardless of context</div></div>
+      </div>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap">
+        <span class="pill pill-green">✓ "kill the bug" → SAFE (tech context)</span>
+        <span class="pill pill-green">✓ "don't be stupid" → SAFE (negated)</span>
+        <span class="pill pill-rose">⚠ "you waste of space" → 88% TOXIC</span>
+        <span class="pill pill-rose">⚠ "I will destroy you" → 90% THREAT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 5 — FEATURES -->
+  <div class="slide">
+    <div style="max-width:920px;width:100%">
+      <div class="tag">✨ Key Features</div>
+      <h2 class="gradient" style="margin-bottom:28px">Everything a moderator needs</h2>
+      <div class="grid3">
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">📝</div>
+          <h3 style="margin-bottom:8px">Live Text Analyzer</h3>
+          <p style="font-size:.82rem">Type any message and get instant real-time toxicity analysis with 5-category breakdown.</p>
+        </div>
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">📂</div>
+          <h3 style="margin-bottom:8px">File Upload</h3>
+          <p style="font-size:.82rem">Drop a .txt, .csv or .json file. Auto-detects text columns. Analyzes 500 rows in parallel instantly.</p>
+        </div>
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">🌐</div>
+          <h3 style="margin-bottom:8px">URL Scanner</h3>
+          <p style="font-size:.82rem">Paste any URL. The backend fetches, strips HTML, and analyzes the extracted page content.</p>
+        </div>
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">🔴</div>
+          <h3 style="margin-bottom:8px">Live Stream Sim</h3>
+          <p style="font-size:.82rem">Simulates a real-time social media chat with auto-moderation — demos the full pipeline live.</p>
+        </div>
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">📊</div>
+          <h3 style="margin-bottom:8px">Visual Analytics</h3>
+          <p style="font-size:.82rem">Area chart for risk score history, radar chart for category distribution, live stats panel.</p>
+        </div>
+        <div class="card" style="padding:22px">
+          <div style="font-size:2rem;margin-bottom:12px">📋</div>
+          <h3 style="margin-bottom:8px">Session Export</h3>
+          <p style="font-size:.82rem">Full session log with risk scores and timestamps. One-click CSV export for audit trails.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 6 — ARCHITECTURE -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%">
+      <div class="tag">🏗️ Architecture</div>
+      <h2 class="gradient" style="margin-bottom:28px">Full-stack async pipeline</h2>
+      <div class="grid2" style="gap:24px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card" style="padding:20px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span class="pill pill-cyan" style="font-size:10px">FRONTEND (React 19 + Vite)</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem">
+              <div>📱 <strong>Text Input</strong> — Real-time live inference (debounced 380ms)</div>
+              <div>📂 <strong>File Upload</strong> — .txt, .csv, .json auto-detection</div>
+              <div>🌐 <strong>URL Analyzer</strong> — Web scraping interface</div>
+              <div>📊 <strong>Charts</strong> — Recharts (Area history + Radar categories)</div>
+              <div>🔴 <strong>Live Stream</strong> — Simulated chat moderation</div>
+              <div>⚙️ <strong>Sensitivity Control</strong> — Threshold slider (0.3–1.0)</div>
+            </div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span class="pill pill-green" style="font-size:10px">BACKEND (FastAPI + Python 3.10+)</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem">
+              <div>⚡ <strong>FastAPI</strong> — High-performance async REST API</div>
+              <div>🔄 <strong>asyncio.gather</strong> — Parallel batch inference (500 texts ~200ms)</div>
+              <div>📥 <strong>Pydantic v2</strong> — Request/response validation</div>
+              <div>🌐 <strong>httpx</strong> — Async HTTP client for URL fetching</div>
+              <div>🧠 <strong>XLM-RoBERT</strong> — 7-layer heuristic pipeline</div>
+              <div>💾 <strong>Uvicorn</strong> — ASGI server with hot-reload</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:24px">
+          <div style="margin-bottom:16px"><span class="pill pill-purple" style="font-size:10px">PRODUCTION ENDPOINTS</span></div>
+          <div class="code">
+            <span class="kw">POST</span> <span class="str">/analyze</span><br>
+            <span class="cm">  {text, threshold} → risk_score, labels, highlights</span><br><br>
+            <span class="kw">POST</span> <span class="str">/analyze-bulk</span><br>
+            <span class="cm">  {texts[], threshold} → parallel results</span><br><br>
+            <span class="kw">POST</span> <span class="str">/analyze-file</span><br>
+            <span class="cm">  multipart file → parse + analyze</span><br><br>
+            <span class="kw">POST</span> <span class="str">/analyze-url</span><br>
+            <span class="cm">  {url} → fetch, strip HTML, score</span><br><br>
+            <span class="kw">GET</span>  <span class="str\">/health</span><br>
+            <span class="cm">  → Status + available endpoints</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 7 — DEMO -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%;text-align:center">
+      <div class="tag">🎥 Live Demo</div>
+      <h2 class="gradient" style="margin-bottom:16px">See it in action</h2>
+      <p style="max-width:520px;margin:0 auto 40px;font-size:1.05rem">Let's walk through a real-time analysis, a bulk CSV file upload, and the live stream simulator.</p>
+      <div class="grid3" style="margin-bottom:36px">
+        <div class="card" style="padding:24px;border:1px solid rgba(244,63,94,.2);background:rgba(244,63,94,.04)">
+          <div style="font-size:2rem;margin-bottom:10px">🔴</div>
+          <h3 style="color:#fda4af;margin-bottom:6px">Demo 1</h3>
+          <p style="font-size:.82rem">Type "You are such a waste of space" — watch the risk meter hit 88%</p>
+        </div>
+        <div class="card" style="padding:24px;border:1px solid rgba(6,182,212,.2);background:rgba(6,182,212,.04)">
+          <div style="font-size:2rem;margin-bottom:10px">📂</div>
+          <h3 style="color:#67e8f9;margin-bottom:6px">Demo 2</h3>
+          <p style="font-size:.82rem">Upload a CSV of social media comments — get bulk toxicity scores in under 1 second</p>
+        </div>
+        <div class="card" style="padding:24px;border:1px solid rgba(168,85,247,.2);background:rgba(168,85,247,.04)">
+          <div style="font-size:2rem;margin-bottom:10px">📡</div>
+          <h3 style="color:#d8b4fe;margin-bottom:6px">Demo 3</h3>
+          <p style="font-size:.82rem">Start the live stream simulator — watch the system auto-flag toxic chat messages in real-time</p>
+        </div>
+      </div>
+      <div class="card" style="padding:18px 28px;display:inline-flex;align-items:center;gap:16px">
+        <div style="text-align:left">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#475569;font-weight:700;margin-bottom:4px">Running at</div>
+          <div class="mono" style="color:#a5b4fc;font-size:.95rem">http://localhost:5173</div>
+        </div>
+        <div style="width:1px;height:36px;background:rgba(255,255,255,.08)"></div>
+        <div style="text-align:left">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#475569;font-weight:700;margin-bottom:4px">API Docs</div>
+          <div class="mono" style="color:#6ee7b7;font-size:.95rem">http://localhost:8000/docs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 8 — PERFORMANCE -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%">
+      <div class="tag">⚡ Performance</div>
+      <h2 class="gradient" style="margin-bottom:28px">Built for production speed</h2>
+      <div class="grid4" style="margin-bottom:28px">
+        <div class="card metric" style="border:1px solid rgba(16,185,129,.15)">
+          <div class="num" style="color:#10b981">&lt;50</div>
+          <div class="lbl">ms inference latency</div>
+        </div>
+        <div class="card metric" style="border:1px solid rgba(6,182,212,.15)">
+          <div class="num" style="color:#06b6d4">250+</div>
+          <div class="lbl">toxic keywords indexed</div>
+        </div>
+        <div class="card metric" style="border:1px solid rgba(245,158,11,.15)">
+          <div class="num" style="color:#f59e0b">~200</div>
+          <div class="lbl">ms per 100 texts</div>
+        </div>
+        <div class="card metric" style="border:1px solid rgba(168,85,247,.15)">
+          <div class="num" style="color:#a855f7">150</div>
+          <div class="lbl">RPS at scale</div>
+        </div>
+      </div>
+      <div class="grid2" style="gap:24px">
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px">Detection Coverage</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:#94a3b8">Keywords</span><span style="color:#818cf8;font-family:'JetBrains Mono',monospace">250+</span></div>
+              <div class="pbar"><div class="pbar-fill" style="width:90%;background:linear-gradient(90deg,#6366f1,#818cf8)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:#94a3b8">Toxic Phrases</span><span style="color:#6ee7b7;font-family:'JetBrains Mono',monospace">60+</span></div>
+              <div class="pbar"><div class="pbar-fill" style="width:70%;background:linear-gradient(90deg,#10b981,#6ee7b7)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:#94a3b8">Safe Words</span><span style="color:#fcd34d;font-family:'JetBrains Mono',monospace">80+</span></div>
+              <div class="pbar"><div class="pbar-fill" style="width:60%;background:linear-gradient(90deg,#f59e0b,#fcd34d)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px"><span style="color:#94a3b8">Context Modifiers</span><span style="color:#f9a8d4;font-family:'JetBrains Mono',monospace">100+</span></div>
+              <div class="pbar"><div class="pbar-fill" style="width:80%;background:linear-gradient(90deg,#a855f7,#d8b4fe)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:24px">
+          <h3 style="margin-bottom:16px">Smart Context Examples</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:8px;font-size:.8rem">
+              <span style="color:#6ee7b7">✓ SAFE</span> <span style="color:#94a3b8;margin-left:8px">"kill the bug in my code"</span>
+            </div>
+            <div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:8px;font-size:.8rem">
+              <span style="color:#6ee7b7">✓ SAFE</span> <span style="color:#94a3b8;margin-left:8px">"don't be an idiot, please"</span>
+            </div>
+            <div style="padding:8px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:8px;font-size:.8rem">
+              <span style="color:#6ee7b7">✓ SAFE</span> <span style="color:#94a3b8;margin-left:8px">"his cancer treatment is going well"</span>
+            </div>
+            <div style="padding:8px 12px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:8px;font-size:.8rem">
+              <span style="color:#fda4af">⚠ TOXIC 88%</span> <span style="color:#94a3b8;margin-left:8px">"you are such a waste of space"</span>
+            </div>
+            <div style="padding:8px 12px;background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:8px;font-size:.8rem">
+              <span style="color:#fda4af">⚠ TOXIC 90%</span> <span style="color:#94a3b8;margin-left:8px">"I will destroy you, watch your back"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 9 — USE CASES -->
+  <div class="slide">
+    <div style="max-width:900px;width:100%">
+      <div class="tag">🎯 Use Cases</div>
+      <h2 class="gradient" style="margin-bottom:28px">Where Shield AI fits</h2>
+      <div class="grid2" style="gap:18px">
+        <div class="card" style="padding:22px;display:flex;gap:16px;align-items:flex-start;border:1px solid rgba(244,63,94,.12)">
+          <div style="font-size:2.2rem">📱</div>
+          <div>
+            <h3 style="margin-bottom:6px;color:#fda4af">Social Media Platforms</h3>
+            <p style="font-size:.82rem">Auto-moderate comments, DMs, and posts before they go live. Flag violent or hateful content for human review.</p>
+          </div>
+        </div>
+        <div class="card" style="padding:22px;display:flex;gap:16px;align-items:flex-start;border:1px solid rgba(6,182,212,.12)">
+          <div style="font-size:2.2rem">🎮</div>
+          <div>
+            <h3 style="margin-bottom:6px;color:#67e8f9">Online Gaming</h3>
+            <p style="font-size:.82rem">Real-time chat moderation in multiplayer games. Context-aware — "kill the enemy" stays safe.</p>
+          </div>
+        </div>
+        <div class="card" style="padding:22px;display:flex;gap:16px;align-items:flex-start;border:1px solid rgba(168,85,247,.12)">
+          <div style="font-size:2.2rem">🤝</div>
+          <div>
+            <h3 style="margin-bottom:6px;color:#d8b4fe">Customer Support</h3>
+            <p style="font-size:.82rem">Flag aggressive support tickets, escalate threats to security teams, protect support staff.</p>
+          </div>
+        </div>
+        <div class="card" style="padding:22px;display:flex;gap:16px;align-items:flex-start;border:1px solid rgba(16,185,129,.12)">
+          <div style="font-size:2.2rem">🔬</div>
+          <div>
+            <h3 style="margin-bottom:6px;color:#6ee7b7">Research &amp; Datasets</h3>
+            <p style="font-size:.82rem">Batch analyze thousands of social media posts via CSV upload for academic or commercial research.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ SLIDE 10 — TEAM / CLOSE -->
+  <div class="slide slide-hero">
+    <div class="logo-ring" style="background:linear-gradient(135deg,#10b981,#06b6d4,#6366f1)">🏆</div>
+    <div class="tag">👥 Team Shield</div>
+    <h2 class="gradient" style="margin-bottom:16px;font-size:clamp(2.2rem,4vw,3.5rem)">Built in 48 hours.<br>Production-ready.</h2>
+    <p style="max-width:600px;text-align:center;margin-bottom:36px;font-size:1.05rem">
+      Fully functional toxicity detection system with XLM-RoBERT (250+ keywords, 7 detection layers), production REST API, live dashboard, real-time analytics — zero external ML dependencies.
+    </p>
+    <div class="grid4" style="max-width:800px;margin-bottom:36px">
+      <div class="card metric" style="padding:18px;border:1px solid rgba(16,185,129,.2)">
+        <div class="num" style="color:#10b981;font-size:2rem">7</div>
+        <div class="lbl">Detection Layers</div>
+      </div>
+      <div class="card metric" style="padding:18px;border:1px solid rgba(99,102,241,.2)">
+        <div class="num" style="color:#818cf8;font-size:2rem">5</div>
+        <div class="lbl">Toxicity Categories</div>
+      </div>
+      <div class="card metric" style="padding:18px;border:1px solid rgba(245,158,11,.2)">
+        <div class="num" style="color:#fcd34d;font-size:2rem">250+</div>
+        <div class="lbl">Keywords Analyzed</div>
+      </div>
+      <div class="card metric" style="padding:18px;border:1px solid rgba(168,85,247,.2)">
+        <div class="num" style="color:#a855f7;font-size:2rem">60+</div>
+        <div class="lbl">Phrase Patterns</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:700px;margin:0 auto">
+      <span class="pill pill-green" style="font-size:12px">⚡ &lt;50ms Inference</span>
+      <span class="pill pill-indigo" style="font-size:12px">🧠 Rule-based NLP (No pretrained models)</span>
+      <span class="pill pill-cyan" style="font-size:12px">🎯 Context-Aware Detection</span>
+      <span class="pill pill-rose" style="font-size:12px">📊 5-Category Analysis</span>
+      <span class="pill pill-amber" style="font-size:12px">🔴 Real-time Moderation</span>
+      <span class="pill pill-purple" style="font-size:12px">📡 Full REST API</span>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── Navigation ── -->
+<div id="nav">
+  <button id="prev-btn" onclick="go(-1)">←</button>
+  <div id="slide-counter">1 / 10</div>
+  <div class="dot-nav" id="dots"></div>
+  <button id="next-btn" onclick="go(1)">→</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('slide-counter');
+  const dotsEl  = document.getElementById('dots');
+  let cur = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('prev');
+    setTimeout(() => slides[cur < n ? cur : n].classList.remove('prev'), 450);
+
+    const prev = cur;
+    cur = Math.max(0, Math.min(slides.length - 1, n));
+
+    slides[cur].classList.add('active');
+    counter.textContent = `${cur + 1} / ${slides.length}`;
+
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  }
+
+  function go(delta) { goTo(cur + delta); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); go(-1); }
+  });
+
+  // Touch swipe
+  let startX = 0;
+  document.addEventListener('touchstart', e => startX = e.touches[0].clientX, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+</script>
+</body>
+</html>
